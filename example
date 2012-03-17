@@ -1,0 +1,5 @@
+# one specific host is different
+^different.my.net 1000,4000,3000,2000
+
+# the rest of my.net has the same sequence
+my.net 10000,20000,15000
