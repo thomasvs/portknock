@@ -1,0 +1,83 @@
+#!/bin/bash
+
+# Port Knocker
+#
+# 1 - Append this code to your .bashrc or .bash_profile file
+# 2 - Create a .portknocks file in your home directory with a list like
+# host1 port1
+# host1 port2
+# ...
+# host1 portN
+# host2 port1
+# ...
+# 3 - You must open a new terminal session to use the new function
+# 4 - Use it as you would use the ssh command
+# ssh user@server => pssh user@server
+#
+# It accepts the usual options of the SSH program
+
+PORTKNOCKSDIR=~/.portknocks
+
+portknock() {
+  HOST=$1
+  CNT=1
+
+  if ! grep ^$HOST $PORTKNOCKSDIR/* > /dev/null 2>&1
+  then
+    echo "ERROR: please specify a port knock sequence for $HOST in $PORTKNOCKSDIR"
+    return 1
+  fi
+
+  grep ^$HOST $PORTKNOCKSDIR/* | awk '{ for(i=2; i <= NF; i++) printf "%s\n", $i}' | \
+  while read PORT
+  do
+    # echo "Knocking $HOST ($CNT)"
+    nc -w 1 $HOST $PORT
+    ((CNT++))
+  done
+}
+
+pssh() {
+  while getopts "1246ab:c:e:fgi:kl:m:no:p:qstvxACD:F:I:KL:MNO:PR:S:TVw:W:XYy" FLAG
+  do
+    true
+  done
+
+  HOST=${@:$OPTIND:1}
+  HOST=${HOST#*@}
+
+  portknock $HOST || return 
+  ssh $*
+}
+
+pscp() {
+  while getopts "dfl:prtvBCc:i:P:q1246S:o:F:" FLAG
+  do
+    true
+  done
+
+  j=$OPTIND
+  while [ ${@:$j:1} ]
+  do
+    # FIXME: this lets through args without :
+    HOST=${@:$j:1}
+    HOST=${HOST#*@}
+    HOST=${HOST%:*}
+    if [ "$HOST" != "." ] && [ "$HOST" != ".." ]
+    then
+      HOSTS="${HOSTS}${HOST}\n"
+    fi
+    ((j++))
+  done
+
+echo -e $HOSTS | sort -u | \
+  while read HOST
+  do
+    if [ ! -e $HOST ]
+    then
+      portknock $HOST || return 1
+    fi
+  done
+
+  scp $*
+}
