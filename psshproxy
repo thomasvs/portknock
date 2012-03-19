@@ -6,4 +6,4 @@ PORT=$2
 source ~/.bashrc.d/portknock
 
 portknock $HOST || exit 1
-exec /usr/bin/nc $HOST $PORT
+exec `which nc` $HOST $PORT
