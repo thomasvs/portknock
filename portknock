@@ -38,11 +38,12 @@ portknock() {
     echo $HOST | grep -E $regexp > /dev/null 2>&1
     if test $? == 0
     then
-      IFS=$old_IFS
+      IFS=' '
       for port in `echo $ports | cut -d, -f1- --output-delimiter=' '`
       do
         nc -w 1 $HOST $port
       done
+      IFS=$old_IFS
       return 0
     fi
   done
