@@ -1,0 +1,34 @@
+These are tools to integrate port knocking with ssh and scp for bash.
+
+INSTALL
+-------
+
+- run 'make install' as a user to put bash scripts in place
+- make sure you source the script in your .bashrc or .bash_profile
+  source $HOME/.bashrc.d/portknock
+
+  (I have these lines in .bashrc to do so:
+
+if test -e ~/.bashrc.d
+then
+  for f in ~/.bashrc.d/*
+  do
+    source $f
+  done
+fi
+
+CONFIGURATION
+--------------
+
+- create a file in $HOME/.portknock with portknock sequences for your hosts:
+  - one line per sequence
+  - the first argument is a regexp for the hostname
+  - the second argument is a comma-separated list of tcp ports to knock on
+  - empty lines and lines starting with # are ignored
+
+- to integrate seamlessly with ssh (for tools like git, ...) you can
+  add a section to your .ssh/config file using ProxyCommand:
+
+Host different.my.net
+  HostName different.my.net
+  ProxyCommand psshproxy %h %p
